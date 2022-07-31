@@ -43,9 +43,11 @@ NOTFILE_ERR='not a file'
 # getopts check options passed to script
 #===============================================================================
 
-while getopts ':i:c:h' opt
+while getopts ':a:o:i:c:h' opt
 do
   case ${opt} in
+     a) index="${OPTARG}";;
+     o) output_dir="${OPTARG}";; # SV added a slash here for a path yikes
      i) input="${OPTARG}"
 	[ -f "${input}" ] || usage "${input} ${NOTFILE_ERR}";;
      c) cutfile="${OPTARG}"
@@ -70,8 +72,11 @@ input_name="${input_nopath%.*}"
 # ffmpeg create clips - nostdin needed to avoid clash with read command
 #===============================================================================
 
+# TODO SV I modified these outputs and they feel sketchy
 trim_video () {
-    output="${input_name}-${count}.mp4" 
+    output_filename="${input_name}-${index}-${count}.mp4"
+    # if there is an output_dir arg
+    output_path="${output_dir:-}${output_filename}"
     ffmpeg \
     -nostdin \
     -hide_banner \
@@ -83,7 +88,7 @@ trim_video () {
     -c:v libx264 -profile:v high \
     -pix_fmt yuv420p -movflags +faststart \
     -f mp4 \
-    "${output}"
+    "${output_path}"
 }
 
 
